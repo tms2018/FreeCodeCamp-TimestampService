@@ -30,18 +30,31 @@ function sendJsonResponse( res, status, content ){
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-    sendJsonResponse( res, status, { "error": "Improper url format.  Use /api/'date'"});
+    res.render("index",{
+                        title: "FreeCodeCamp Timestamp Microservice",
+                        userStories: ["I can pass a string as a parameter, and it will check to see whether that string contains either a unix timestamp or a natural language date (example: January 1, 2016).",
+                                       "If it does, it returns both the Unix timestamp and the natural language form of that date.",
+                                       "If it does not contain a date or Unix timestamp, it returns null for those properties."
+                                      ],
+                        exampleUsage: "https://timestamp.herokuapp.com/January%2010,%202016<br/>https://timestamp.herokuapp.com/1438228800",
+                        exampleResponse: '{ "unix" : 1438228800, "natural" : "July 10, 2015" }' 
+    });
 });
 
-router.get('/api/:date', function(req, res, next) {
+router.get('/:date', function(req, res, next) {
     //regex test if the date is a number
-    if(/^\d+$/.test(req.params.date)){
-       return sendJsonResponse( res, 200, jsonFromUnixTimestamp(req.params.date));
+    if(/^-?\d+$/.test(req.params.date)){
+            
+        //make sure number is within maximum and minimum range for a Date object
+        if (req.params.date <= 8640000000000 && req.params.date >= -8640000000000)
+            return sendJsonResponse( res, 200, jsonFromUnixTimestamp(req.params.date));
     }
     //regex test if the date matches a natural language date
     else if ( /^(January|February|March|April|May|June|July|August|September|October|November|December)\s\d\d,\s\d{4}$/i.test(req.params.date)) { 
+        
         //separate day month and year to use in Date.validateDay()    
         var date = req.params.date.split(",").join("").split(" "); 
+        
         //return error if date is invalid, return the date json otherwise
         if(Date.validateDay(Number(date[1]), Number(date[2]) , Date.getMonthNumberFromName(date[0]))){
             
@@ -49,13 +62,9 @@ router.get('/api/:date', function(req, res, next) {
             date = req.params.date.charAt(0).toUpperCase() + req.params.date.slice(1);
             return sendJsonResponse( res, 200, jsonFromDate(date));
         }
-        else {
-            //day was not between 1 and 28/30/31 depending on the month
-            return sendJsonResponse( res, 400, { "error" : "The provided day was not valid" });
-        }
     }
     //the date wasn't specified in the proper format
-    sendJsonResponse( res, 400, { "error" : "Improper date format.  Use unix timestamp or 'MONTH DAY, YEAR'"});
+    sendJsonResponse( res, 400, { "unix": null, "natural" : null});
 });
 
 
