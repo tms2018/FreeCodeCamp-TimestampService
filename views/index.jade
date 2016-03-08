@@ -10,9 +10,3 @@ block content
     code!= exampleUsage
   h2 Example response:<br/>
     code= exampleResponse
-  h3.comments Comments
-  p.comments
-    | Even thought this app is just a microservice, I believe it would be more useful if it provided a more 
-    | robust error response.  For example, if the user provides a string with a day that is too large for the month, 
-    | a sample response could be:<br/>
-    code { "status" : 400, "error" : "The provided day does not match the range of the provided month" }
